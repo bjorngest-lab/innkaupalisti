@@ -1,278 +1,319 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ==========================================================================
+   Innkaupalisti — Origo þema
+   --------------------------------------------------------------------------
+   Settu þessa skrá inn í verkefnið og linkaðu henni í <head>:
+       <link rel="stylesheet" href="/origo-theme.css">
+
+   Tvær leiðir til að nota:
+   1) Notaðu CSS-breyturnar (--ikl-*) beint í þínum eigin stílum.
+   2) Eða notaðu tilbúnu klasana (.ikl-*) á markup-inn þinn.
+
+   Litir eru skilgreindir í oklch (nákvæmlega eins og í hönnuninni). Hex-gildi
+   fylgja í athugasemdum ef þú vilt frekar nota þau.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* --- Áherslulitur (Origo kóral) --- */
+  --ikl-accent:        oklch(0.645 0.18 35);   /* ~ #E15B3A */
+  --ikl-accent-hover:  oklch(0.58 0.17 35);    /* ~ #C84E30  (t.d. :hover á hnöppum) */
+  --ikl-accent-soft:   oklch(0.95 0.03 40);    /* ~ #FBEDE8  (mjúkur bakgrunnur) */
+
+  /* --- Grunnflötur og bakgrunnur --- */
+  --ikl-page:    #EFEEEB;   /* síðubakgrunnur utan um appið */
+  --ikl-surface: #FFFFFF;   /* appið sjálft / spjöld */
+
+  /* --- Texti --- */
+  --ikl-text:        #25231E;   /* aðaltexti */
+  --ikl-text-soft:   #5C584E;   /* verð, aukatexti */
+  --ikl-text-muted:  #8A8579;   /* merkimiðar */
+  --ikl-text-faint:  #A29D90;   /* magn, daufur texti */
+  --ikl-text-done:   #B7B1A4;   /* yfirstrikað / keypt */
+
+  /* --- Línur og rammar --- */
+  --ikl-border:        #F0EBE1;   /* línur milli vara */
+  --ikl-border-strong: #E3DDD1;   /* rammar á innslætti */
+  --ikl-track:         #ECE7DD;   /* framvindustika, bakgrunnur */
+
+  /* --- Deildalitir (flokkapunktar) --- */
+  --ikl-cat-graenmeti: oklch(0.68 0.13 145);   /* grænt   ~ #5DB36C */
+  --ikl-cat-mjolk:     oklch(0.68 0.13 250);   /* blátt   ~ #6F9AE0 */
+  --ikl-cat-kjot:      oklch(0.68 0.13 25);    /* rautt   ~ #D98472 */
+  --ikl-cat-braud:     oklch(0.72 0.12 75);    /* gult    ~ #CB9F4D */
+  --ikl-cat-thurr:     oklch(0.66 0.13 300);   /* fjólu   ~ #A982D2 */
+  --ikl-cat-annad:     oklch(0.68 0.12 200);   /* túrkís  ~ #56AEC0 */
+
+  /* --- Letur --- */
+  --ikl-font: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+
+  /* --- Radíusar --- */
+  --ikl-radius-pill:  99px;   /* deildaval, chips */
+  --ikl-radius-input: 12px;   /* innsláttarreitir */
+  --ikl-radius-btn:   14px;   /* +-hnappur */
+
+  /* --- Skuggi --- */
+  --ikl-shadow-bar: 0 -10px 24px -16px rgba(0,0,0,0.18);
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: #FAEEDA;
-  color: #2C2C2A;
+/* ==========================================================================
+   Tilbúnir stílklasar
+   ========================================================================== */
+
+/* --- Umgjörð --- */
+.ikl-page {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--ikl-page);
+  display: flex;
+  justify-content: center;
+  font-family: var(--ikl-font);
+  color: var(--ikl-text);
   -webkit-font-smoothing: antialiased;
 }
 
-.app {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 22px 16px 90px;
-}
-
-h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 22px;
-  text-align: center;
-  color: #854F0B;
-}
-
-.section-label {
-  font-size: 13px;
-  color: #854F0B;
-  margin: 0 0 8px 2px;
-}
-
-.quick-row {
+.ikl-app {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  background: var(--ikl-surface);
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
+  flex-direction: column;
 }
 
-.quick-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+/* --- Haus --- */
+.ikl-header {
+  padding: 56px 24px 18px;
+  background: var(--ikl-surface);
 }
 
-.quick-btn {
-  background: #fff;
-  border: 1px solid #EF9F27;
-  border-radius: 22px;
-  padding: 11px 17px;
-  font-size: 16px;
-  cursor: pointer;
-  color: #633806;
-}
-
-.quick-btn:active {
-  background: #FAEEDA;
-}
-
-.settings-btn {
-  background: none;
-  border: none;
-  color: #854F0B;
-  font-size: 22px;
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-}
-
-.add-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.add-row input,
-.add-row select {
-  font-size: 16px;
-  padding: 13px 12px;
-  border: 1px solid #E1D9C8;
-  border-radius: 12px;
-  background: #fff;
-  color: #2C2C2A;
-}
-
-.add-row input {
-  flex: 1;
-  min-width: 0;
-}
-
-.add-row select {
-  width: 120px;
-}
-
-.add-btn {
-  background: #BA7517;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 0 20px;
-  font-size: 24px;
-  cursor: pointer;
-  min-width: 56px;
-}
-
-.cat-section {
-  margin-bottom: 22px;
-}
-
-.cat-header {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 8px 2px;
+.ikl-eyebrow {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ikl-text-muted);
 }
-
-.cat-icon {
-  font-size: 20px;
-}
-
-.item-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 8px;
-}
-
-.check {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+.ikl-eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  border: 1.5px solid #D3D1C7;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #fff;
+  background: var(--ikl-accent);
 }
 
-.check.done {
-  background: #1D9E75;
-  border-color: #1D9E75;
+.ikl-title {
+  font-family: var(--ikl-font);
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
 }
 
-.item-name {
-  flex: 1;
-  font-size: 17px;
-}
-
-.item-name.done {
-  text-decoration: line-through;
-  color: #B4B2A9;
-}
-
-.qty-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.qty-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  border: 1px solid #E1D9C8;
-  background: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  color: #854F0B;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.qty-num {
-  font-size: 15px;
-  color: #888780;
-  min-width: 28px;
-  text-align: center;
-}
-
-.del-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #D3D1C7;
-  padding: 4px;
-}
-
-.empty, .loading {
-  text-align: center;
-  color: #B4B2A9;
-  padding: 40px 0;
-  font-size: 16px;
-}
-
-.clear-done {
-  display: block;
-  margin: 18px auto 0;
-  background: #fff;
-  border: 1px solid #E1D9C8;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-size: 15px;
-  color: #854F0B;
-  cursor: pointer;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
+.ikl-summary {
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal {
-  background: #FAEEDA;
-  border-radius: 20px 20px 0 0;
-  width: 100%;
-  max-width: 520px;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 22px 18px 32px;
-}
-
-.modal h2 {
-  font-size: 19px;
-  font-weight: 600;
-  color: #854F0B;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
 }
-
-.modal-close {
-  background: none;
-  border: none;
+.ikl-summary-label { font-size: 13px; color: var(--ikl-text-muted); margin-bottom: 2px; }
+.ikl-summary-count { font-size: 15px; font-weight: 500; }
+.ikl-total {
+  font-family: var(--ikl-font);
+  font-weight: 700;
   font-size: 26px;
-  color: #888780;
-  cursor: pointer;
   line-height: 1;
+  letter-spacing: -0.02em;
+  text-align: right;
 }
 
-.fav-row {
+/* --- Framvindustika --- */
+.ikl-progress {
+  height: 6px;
+  border-radius: var(--ikl-radius-pill);
+  background: var(--ikl-track);
+  overflow: hidden;
+}
+.ikl-progress-fill {
+  height: 100%;
+  border-radius: var(--ikl-radius-pill);
+  background: var(--ikl-accent);
+  transition: width 0.35s ease;
+}
+
+/* --- Deildaflokkur --- */
+.ikl-section { margin-top: 22px; }
+.ikl-section-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  gap: 9px;
+  margin-bottom: 4px;
 }
-
-.fav-name {
-  flex: 1;
-  font-size: 16px;
+.ikl-section-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ikl-text-faint); /* yfirskrifast með deildalit, sjá .ikl-cat-* */
 }
-
-.fav-cat {
+.ikl-section-name {
   font-size: 13px;
-  color: #888780;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ikl-section-count { font-size: 13px; color: var(--ikl-text-faint); }
+
+/* Deildalitir á punktinum: bættu við réttum klasa á .ikl-section-dot */
+.ikl-cat-graenmeti { background: var(--ikl-cat-graenmeti); }
+.ikl-cat-mjolk     { background: var(--ikl-cat-mjolk); }
+.ikl-cat-kjot      { background: var(--ikl-cat-kjot); }
+.ikl-cat-braud     { background: var(--ikl-cat-braud); }
+.ikl-cat-thurr     { background: var(--ikl-cat-thurr); }
+.ikl-cat-annad     { background: var(--ikl-cat-annad); }
+
+/* --- Vörulína --- */
+.ikl-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--ikl-border);
+}
+.ikl-item-body { flex: 1; min-width: 0; }
+.ikl-item-name { font-size: 16px; font-weight: 500; line-height: 1.25; color: var(--ikl-text); }
+.ikl-item-qty  { font-size: 13px; color: var(--ikl-text-faint); }
+.ikl-item-price { font-size: 15px; font-weight: 500; white-space: nowrap; color: var(--ikl-text-soft); }
+
+/* Keypt vara: bættu .is-done við .ikl-item */
+.ikl-item.is-done .ikl-item-name,
+.ikl-item.is-done .ikl-item-price {
+  color: var(--ikl-text-done);
+  text-decoration: line-through;
+}
+
+/* --- Haka-hringur --- */
+.ikl-check {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #D6D0C3;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.ikl-check.is-done {
+  background: var(--ikl-accent);
+  border-color: var(--ikl-accent);
+}
+/* haka-merkið ✓ birtist aðeins þegar keypt */
+.ikl-check::after { content: ""; }
+.ikl-check.is-done::after { content: "\2713"; }
+
+/* --- Eyða-takki --- */
+.ikl-remove {
+  border: none;
+  background: none;
+  color: #D8D2C6;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+}
+
+/* --- Innsláttarstika neðst --- */
+.ikl-addbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--ikl-surface);
+  border-top: 1px solid #EDE8DE;
+  padding: 14px 24px 26px;
+  box-shadow: var(--ikl-shadow-bar);
+}
+
+.ikl-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  padding-bottom: 2px;
+}
+.ikl-chips::-webkit-scrollbar { display: none; }
+
+.ikl-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: var(--ikl-radius-pill);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--ikl-font);
+  border: 1px solid var(--ikl-border-strong);
+  background: #fff;
+  color: #6B665B;
+  transition: all 0.15s ease;
+}
+.ikl-chip.is-active {
+  border-color: var(--ikl-accent);
+  background: var(--ikl-accent);
+  color: #fff;
+}
+
+.ikl-addrow { display: flex; align-items: center; gap: 10px; }
+
+.ikl-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--ikl-border-strong);
+  background: #fff;
+  border-radius: var(--ikl-radius-input);
+  padding: 13px 14px;
+  font-family: var(--ikl-font);
+  font-size: 15px;
+  color: var(--ikl-text);
+  outline: none;
+}
+.ikl-input--price { width: 68px; flex: none; text-align: center; padding-left: 10px; padding-right: 10px; }
+.ikl-input:focus { border-color: var(--ikl-accent); }
+
+.ikl-add-btn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ikl-radius-btn);
+  border: none;
+  background: var(--ikl-accent);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 3px;
+  transition: background 0.15s ease;
+}
+.ikl-add-btn:hover { background: var(--ikl-accent-hover); }
+
+/* --- Allt klárað --- */
+.ikl-done-state { text-align: center; padding: 40px 20px; color: var(--ikl-text-faint); }
+.ikl-done-title {
+  font-family: var(--ikl-font);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ikl-accent);
+  margin-bottom: 4px;
 }
