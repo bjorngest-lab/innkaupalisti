@@ -1,278 +1,210 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+import { useState, useEffect } from 'react'
+import { supabase } from './supabase'
+
+const CAT_ORDER = ['Mjólkurvörur', 'Brauð', 'Kjöt', 'Grænmeti', 'Ávextir', 'Frosið', 'Sósur', 'Drykkir', 'Annað']
+
+// Ikon (emoji) fyrir hvern flokk
+const CAT_ICON = {
+  'Mjólkurvörur': '🥛',
+  'Brauð': '🍞',
+  'Kjöt': '🥩',
+  'Grænmeti': '🥦',
+  'Ávextir': '🍎',
+  'Frosið': '🧊',
+  'Sósur': '🥫',
+  'Drykkir': '☕',
+  'Annað': '🛒',
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: #FAEEDA;
-  color: #2C2C2A;
-  -webkit-font-smoothing: antialiased;
-}
+export default function App() {
+  const [items, setItems] = useState([])
+  const [favs, setFavs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [customName, setCustomName] = useState('')
+  const [customCat, setCustomCat] = useState('Mjólkurvörur')
+  const [showSettings, setShowSettings] = useState(false)
+  const [favName, setFavName] = useState('')
+  const [favCat, setFavCat] = useState('Mjólkurvörur')
 
-.app {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 22px 16px 90px;
-}
+  useEffect(() => {
+    loadAll()
+    const channel = supabase
+      .channel('innkaup-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'innkaupalisti' }, () => loadItems())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'flytivorur' }, () => loadFavs())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
-h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 22px;
-  text-align: center;
-  color: #854F0B;
-}
+  async function loadAll() {
+    await Promise.all([loadItems(), loadFavs()])
+    setLoading(false)
+  }
 
-.section-label {
-  font-size: 13px;
-  color: #854F0B;
-  margin: 0 0 8px 2px;
-}
+  async function loadItems() {
+    const { data } = await supabase.from('innkaupalisti').select('*').order('created_at', { ascending: true })
+    setItems(data || [])
+  }
 
-.quick-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
+  async function loadFavs() {
+    const { data } = await supabase.from('flytivorur').select('*').order('created_at', { ascending: true })
+    setFavs(data || [])
+  }
 
-.quick-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
-}
+  async function addItem(name, cat) {
+    const existing = items.find((i) => i.name.toLowerCase() === name.toLowerCase() && !i.done)
+    if (existing) {
+      await supabase.from('innkaupalisti').update({ qty: existing.qty + 1 }).eq('id', existing.id)
+    } else {
+      await supabase.from('innkaupalisti').insert({ name, cat: cat || 'Annað', qty: 1, done: false })
+    }
+    loadItems()
+  }
 
-.quick-btn {
-  background: #fff;
-  border: 1px solid #EF9F27;
-  border-radius: 22px;
-  padding: 11px 17px;
-  font-size: 16px;
-  cursor: pointer;
-  color: #633806;
-}
+  async function changeQty(item, delta) {
+    const newQty = item.qty + delta
+    if (newQty < 1) {
+      await supabase.from('innkaupalisti').delete().eq('id', item.id)
+    } else {
+      await supabase.from('innkaupalisti').update({ qty: newQty }).eq('id', item.id)
+    }
+    loadItems()
+  }
 
-.quick-btn:active {
-  background: #FAEEDA;
-}
+  async function toggleDone(item) {
+    await supabase.from('innkaupalisti').update({ done: !item.done }).eq('id', item.id)
+    loadItems()
+  }
 
-.settings-btn {
-  background: none;
-  border: none;
-  color: #854F0B;
-  font-size: 22px;
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-}
+  async function removeItem(item) {
+    await supabase.from('innkaupalisti').delete().eq('id', item.id)
+    loadItems()
+  }
 
-.add-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
+  async function clearDone() {
+    await supabase.from('innkaupalisti').delete().eq('done', true)
+    loadItems()
+  }
 
-.add-row input,
-.add-row select {
-  font-size: 16px;
-  padding: 13px 12px;
-  border: 1px solid #E1D9C8;
-  border-radius: 12px;
-  background: #fff;
-  color: #2C2C2A;
-}
+  function handleAddCustom() {
+    const name = customName.trim()
+    if (name) { addItem(name, customCat); setCustomName('') }
+  }
 
-.add-row input {
-  flex: 1;
-  min-width: 0;
-}
+  // Flýtivörur
+  async function addFav() {
+    const name = favName.trim()
+    if (!name) return
+    await supabase.from('flytivorur').insert({ name, cat: favCat })
+    setFavName('')
+    loadFavs()
+  }
 
-.add-row select {
-  width: 120px;
-}
+  async function removeFav(fav) {
+    await supabase.from('flytivorur').delete().eq('id', fav.id)
+    loadFavs()
+  }
 
-.add-btn {
-  background: #BA7517;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 0 20px;
-  font-size: 24px;
-  cursor: pointer;
-  min-width: 56px;
-}
+  const cats = CAT_ORDER.filter((c) => items.some((i) => i.cat === c))
+  const hasDone = items.some((i) => i.done)
 
-.cat-section {
-  margin-bottom: 22px;
-}
+  return (
+    <div className="app">
+      <h1>🛒 Innkaupalisti</h1>
 
-.cat-header {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 8px 2px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
+      <div className="quick-row">
+        <p className="section-label">Smelltu til að bæta á listann</p>
+        <button className="settings-btn" onClick={() => setShowSettings(true)} aria-label="Stilla flýtival">⚙️</button>
+      </div>
+      <div className="quick-buttons">
+        {favs.map((q) => (
+          <button key={q.id} className="quick-btn" onClick={() => addItem(q.name, q.cat)}>
+            {q.name}
+          </button>
+        ))}
+      </div>
 
-.cat-icon {
-  font-size: 20px;
-}
+      <div className="add-row">
+        <input
+          type="text"
+          placeholder="Eigin vara…"
+          value={customName}
+          onChange={(e) => setCustomName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustom() }}
+        />
+        <select value={customCat} onChange={(e) => setCustomCat(e.target.value)}>
+          {CAT_ORDER.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button className="add-btn" onClick={handleAddCustom}>+</button>
+      </div>
 
-.item-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 8px;
-}
+      {loading ? (
+        <div className="loading">Hleð…</div>
+      ) : items.length === 0 ? (
+        <div className="empty">Listinn er tómur — bættu við vörum hér að ofan.</div>
+      ) : (
+        <>
+          {cats.map((cat) => (
+            <div key={cat} className="cat-section">
+              <p className="cat-header"><span className="cat-icon">{CAT_ICON[cat] || '🛒'}</span>{cat}</p>
+              {items.filter((i) => i.cat === cat).map((item) => (
+                <div key={item.id} className="item-row">
+                  <button
+                    className={'check' + (item.done ? ' done' : '')}
+                    onClick={() => toggleDone(item)}
+                    aria-label={item.done ? 'Afmerkja' : 'Merkja sem komið'}
+                  >
+                    {item.done ? '✓' : ''}
+                  </button>
+                  <span className={'item-name' + (item.done ? ' done' : '')}>{item.name}</span>
+                  <div className="qty-wrap">
+                    <button className="qty-btn" onClick={() => changeQty(item, -1)} aria-label="Minnka">−</button>
+                    <span className="qty-num">{item.qty}x</span>
+                    <button className="qty-btn" onClick={() => changeQty(item, 1)} aria-label="Auka">+</button>
+                  </div>
+                  <button className="del-btn" onClick={() => removeItem(item)} aria-label="Eyða">🗑</button>
+                </div>
+              ))}
+            </div>
+          ))}
+          {hasDone && (
+            <button className="clear-done" onClick={clearDone}>Hreinsa það sem er hakkað við</button>
+          )}
+        </>
+      )}
 
-.check {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  border-radius: 50%;
-  border: 1.5px solid #D3D1C7;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #fff;
-}
+      {showSettings && (
+        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>
+              Stilla flýtival
+              <button className="modal-close" onClick={() => setShowSettings(false)} aria-label="Loka">×</button>
+            </h2>
 
-.check.done {
-  background: #1D9E75;
-  border-color: #1D9E75;
-}
+            <div className="add-row">
+              <input
+                type="text"
+                placeholder="Ný flýtivara…"
+                value={favName}
+                onChange={(e) => setFavName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addFav() }}
+              />
+              <select value={favCat} onChange={(e) => setFavCat(e.target.value)}>
+                {CAT_ORDER.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button className="add-btn" onClick={addFav}>+</button>
+            </div>
 
-.item-name {
-  flex: 1;
-  font-size: 17px;
-}
-
-.item-name.done {
-  text-decoration: line-through;
-  color: #B4B2A9;
-}
-
-.qty-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.qty-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  border: 1px solid #E1D9C8;
-  background: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  color: #854F0B;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.qty-num {
-  font-size: 15px;
-  color: #888780;
-  min-width: 28px;
-  text-align: center;
-}
-
-.del-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #D3D1C7;
-  padding: 4px;
-}
-
-.empty, .loading {
-  text-align: center;
-  color: #B4B2A9;
-  padding: 40px 0;
-  font-size: 16px;
-}
-
-.clear-done {
-  display: block;
-  margin: 18px auto 0;
-  background: #fff;
-  border: 1px solid #E1D9C8;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-size: 15px;
-  color: #854F0B;
-  cursor: pointer;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal {
-  background: #FAEEDA;
-  border-radius: 20px 20px 0 0;
-  width: 100%;
-  max-width: 520px;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 22px 18px 32px;
-}
-
-.modal h2 {
-  font-size: 19px;
-  font-weight: 600;
-  color: #854F0B;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 26px;
-  color: #888780;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.fav-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-}
-
-.fav-name {
-  flex: 1;
-  font-size: 16px;
-}
-
-.fav-cat {
-  font-size: 13px;
-  color: #888780;
+            {favs.map((f) => (
+              <div key={f.id} className="fav-row">
+                <span className="fav-name">{f.name}</span>
+                <span className="fav-cat">{f.cat}</span>
+                <button className="del-btn" onClick={() => removeFav(f)} aria-label="Eyða flýtivöru">🗑</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
